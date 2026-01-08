@@ -1,4 +1,4 @@
-🏪 NK Enterprise  Management System
+🏪 NK Enterprise Management System
 
 A web-based Provision Shop Management System designed to help shop owners efficiently manage products, sales, suppliers, and inventory in a simple and secure way.
 This system replaces manual record-keeping with a modern digital solution, improving accuracy, speed, and decision-making.
@@ -100,20 +100,20 @@ Tokens and user data are stored securely in local storage
 📂 Project Structure
 src/
 ├── components/
-│   ├── layout/
-│   ├── ui/
+│ ├── layout/
+│ ├── ui/
 ├── contexts/
-│   ├── AuthContext.tsx
-│   ├── SidebarContext.tsx
+│ ├── AuthContext.tsx
+│ ├── SidebarContext.tsx
 ├── pages/
-│   ├── Login.tsx
-│   ├── Index.tsx
-│   ├── Products.tsx
-│   ├── Sales.tsx
-│   ├── Suppliers.tsx
-│   ├── LowStock.tsx
-│   ├── Settings.tsx
-│   └── NotFound.tsx
+│ ├── Login.tsx
+│ ├── Index.tsx
+│ ├── Products.tsx
+│ ├── Sales.tsx
+│ ├── Suppliers.tsx
+│ ├── LowStock.tsx
+│ ├── Settings.tsx
+│ └── NotFound.tsx
 ├── App.tsx
 └── main.tsx
 
@@ -123,22 +123,17 @@ Clone the repository
 
 git clone https://github.com/ruebeniosdev/stock-savvy
 
-
 Navigate into the project folder
 
 cd stock-savvy
-
-
 
 Install dependencies
 
 bun install
 
-
 Start the development server
 
 bun run dev
-
 
 Open your browser and visit:
 
