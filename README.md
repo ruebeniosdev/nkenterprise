@@ -3,6 +3,9 @@
 A web-based Provision Shop Management System designed to help shop owners efficiently manage products, sales, suppliers, and inventory in a simple and secure way.
 This system replaces manual record-keeping with a modern digital solution, improving accuracy, speed, and decision-making.
 
+Live URL
+https://nkenterprisemagementsystem.netlify.app/login
+
 📌 Project Overview
 
 The Provision Shop Management System is built to automate the daily operations of a retail provision shop.
