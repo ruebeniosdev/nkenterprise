@@ -30,7 +30,7 @@ const Products = () => {
     barcode: "",
   });
 
-  const baseUrl = "https://2494ee857a2f.ngrok-free.app/api";
+  const baseUrl = "https://e0381ad6b58d.ngrok-free.app/api";
   const token = localStorage.getItem("authToken");
 
   // Fetch products

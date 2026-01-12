@@ -12,34 +12,82 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Search, AlertTriangle, ShoppingCart, Package, CheckCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 
 interface LowStockItem {
-  id: string;
-  name: string;
-  category: string;
-  sku: string;
-  currentStock: number;
-  minStock: number;
-  supplier: string;
-  lastOrdered: string;
+  product_id: number;
+  product_name: string;
+  category_name: string;
+  quantity_in_stock: number;
+  reorder_level: number;
+  shortage: number;
+  supplier_name: string;
 }
 
 const LowStock = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [lowStockItems] = useState<LowStockItem[]>([]);
+  const [lowStockItems, setLowStockItems] = useState<LowStockItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchLowStockProducts();
+  }, []);
+
+  const fetchLowStockProducts = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("authToken");
+      
+      if (!token) {
+        toast({
+          title: "Authentication Error",
+          description: "Please login to continue",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const response = await fetch("https://e0381ad6b58d.ngrok-free.app/api/products/low-stock", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setLowStockItems(result.data || []);
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "Failed to fetch low stock products",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching low stock products:", error);
+      toast({
+        title: "Error",
+        description: "Failed to connect to server",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredItems = lowStockItems.filter(
     (item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.sku.toLowerCase().includes(searchTerm.toLowerCase())
+      item.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.category_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleReorder = (item: LowStockItem) => {
     toast({
       title: "Reorder Initiated",
-      description: `Purchase order created for ${item.name} from ${item.supplier}`,
+      description: `Purchase order created for ${item.product_name} from ${item.supplier_name}`,
     });
   };
 
@@ -49,6 +97,19 @@ const LowStock = () => {
     if (percentage < 50) return "low";
     return "warning";
   };
+
+  if (loading) {
+    return (
+      <MainLayout title="Low Stock Alerts" subtitle="Products that need to be restocked">
+        <div className="flex h-64 items-center justify-center">
+          <div className="text-center">
+            <Package className="mx-auto mb-4 h-12 w-12 animate-pulse text-muted-foreground" />
+            <p className="text-muted-foreground">Loading low stock products...</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout title="Low Stock Alerts" subtitle="Products that need to be restocked">
@@ -62,7 +123,7 @@ const LowStock = () => {
             <div>
               <p className="text-sm text-muted-foreground">Critical (Out of Stock)</p>
               <p className="text-2xl font-bold text-destructive">
-                {lowStockItems.filter((i) => i.currentStock === 0).length}
+                {lowStockItems.filter((i) => i.quantity_in_stock === 0).length}
               </p>
             </div>
           </div>
@@ -86,8 +147,10 @@ const LowStock = () => {
               <ShoppingCart className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Pending Reorders</p>
-              <p className="text-2xl font-bold text-primary">0</p>
+              <p className="text-sm text-muted-foreground">Total Shortage</p>
+              <p className="text-2xl font-bold text-primary">
+                {lowStockItems.reduce((sum, item) => sum + item.shortage, 0)}
+              </p>
             </div>
           </div>
         </div>
@@ -123,29 +186,27 @@ const LowStock = () => {
               <TableHeader>
                 <TableRow className="bg-muted/50">
                   <TableHead>Product</TableHead>
-                  <TableHead>SKU</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Stock Level</TableHead>
+                  <TableHead>Shortage</TableHead>
                   <TableHead>Supplier</TableHead>
-                  <TableHead>Last Ordered</TableHead>
                   <TableHead className="text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredItems.map((item) => {
-                  const stockLevel = getStockLevel(item.currentStock, item.minStock);
-                  const stockPercentage = Math.min((item.currentStock / item.minStock) * 100, 100);
+                  const stockLevel = getStockLevel(item.quantity_in_stock, item.reorder_level);
+                  const stockPercentage = Math.min((item.quantity_in_stock / item.reorder_level) * 100, 100);
 
                   return (
-                    <TableRow key={item.id} className="hover:bg-muted/30">
-                      <TableCell className="font-medium">{item.name}</TableCell>
-                      <TableCell className="text-muted-foreground">{item.sku}</TableCell>
-                      <TableCell>{item.category}</TableCell>
+                    <TableRow key={item.product_id} className="hover:bg-muted/30">
+                      <TableCell className="font-medium">{item.product_name}</TableCell>
+                      <TableCell>{item.category_name}</TableCell>
                       <TableCell>
                         <div className="w-32 space-y-1">
                           <div className="flex items-center justify-between text-sm">
                             <span className={stockLevel === "critical" ? "text-destructive" : "text-warning"}>
-                              {item.currentStock} / {item.minStock}
+                              {item.quantity_in_stock} / {item.reorder_level}
                             </span>
                             {stockLevel === "critical" && (
                               <Badge className="bg-destructive/10 text-destructive border-destructive/20">
@@ -159,8 +220,12 @@ const LowStock = () => {
                           />
                         </div>
                       </TableCell>
-                      <TableCell>{item.supplier}</TableCell>
-                      <TableCell className="text-muted-foreground">{item.lastOrdered}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-destructive border-destructive/20">
+                          -{item.shortage} units
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{item.supplier_name}</TableCell>
                       <TableCell className="text-right">
                         <Button 
                           size="sm" 

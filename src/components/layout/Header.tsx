@@ -19,16 +19,16 @@ const Header = ({ title, subtitle }: HeaderProps) => {
 
       <div className="flex items-center gap-4">
         {/* Search */}
-        <div className="relative hidden md:block">
+        {/* <div className="relative hidden md:block">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search products..."
             className="w-64 pl-9"
           />
-        </div>
+        </div> */}
 
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative">
+        {/* <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-medium text-accent-foreground">
             3
@@ -36,9 +36,9 @@ const Header = ({ title, subtitle }: HeaderProps) => {
         </Button>
 
         {/* User Menu */}
-        <Button variant="ghost" size="icon">
+        {/* <Button variant="ghost" size="icon">
           <User className="h-5 w-5" />
-        </Button>
+        </Button> */} 
       </div>
     </header>
   );

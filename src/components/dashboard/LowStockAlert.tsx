@@ -1,59 +1,99 @@
+import { useEffect, useState } from "react";
 import { AlertTriangle, CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface LowStockItem {
-  id: string;
-  name: string;
-  currentStock: number;
-  minStock: number;
+  product_id: number;
+  product_name: string;
+  quantity_in_stock: number;
+  reorder_level: number;
 }
 
 const LowStockAlert = () => {
-  // Empty data - no static data
-  const lowStockItems: LowStockItem[] = [];
+  const [items, setItems] = useState<LowStockItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const baseUrl = "https://e0381ad6b58d.ngrok-free.app/api";
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+
+    if (!token) {
+      console.warn("Dashboard: No auth token found");
+      setLoading(false);
+      return;
+    }
+
+    const fetchLowStock = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/products/low-stock`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "true",
+          },
+        });
+
+        const result = await response.json();
+
+        console.log("Low stock dashboard response:", result);
+
+        if (!response.ok) {
+          throw new Error(result.message || "Request failed");
+        }
+
+        // 🔥 SUPPORT BOTH RESPONSE SHAPES
+        const data =
+          result.data ||
+          result.products ||
+          [];
+
+        setItems(data);
+      } catch (error) {
+        console.error("Dashboard low stock error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLowStock();
+  }, []);
 
   return (
-    <div className="animate-slide-up rounded-xl border border-border bg-card p-6 shadow-sm">
+    <div className="rounded-xl border bg-card p-6">
       <div className="mb-4 flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-          <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-        </div>
-        <h3 className="text-lg font-semibold text-card-foreground">Low Stock Alert</h3>
-        <span className="ml-auto rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-          {lowStockItems.length} items
+        <AlertTriangle className="h-5 w-5 text-orange-500" />
+        <h3 className="font-semibold">Low Stock Alert</h3>
+        <span className="ml-auto text-sm text-muted-foreground">
+          {items.length} items
         </span>
       </div>
 
-      {lowStockItems.length === 0 ? (
-        <div className="flex h-40 flex-col items-center justify-center text-center">
-          <CheckCircle className="mb-3 h-10 w-10 text-success/50" />
-          <p className="text-muted-foreground">All stock levels are good</p>
-          <p className="text-sm text-muted-foreground/70">Add products to track inventory</p>
+      {loading && (
+        <p className="text-sm text-muted-foreground">
+          Checking stock levels…
+        </p>
+      )}
+
+      {!loading && items.length === 0 && (
+        <div className="text-center text-sm text-muted-foreground">
+          <CheckCircle className="mx-auto mb-2 h-8 w-8 text-green-500/60" />
+          All stock levels are good
         </div>
-      ) : (
-        <>
-          <div className="space-y-3">
-            {lowStockItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between rounded-lg bg-destructive/5 p-3"
-              >
-                <div>
-                  <p className="font-medium text-card-foreground">{item.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {item.currentStock} left (Min: {item.minStock})
-                  </p>
-                </div>
-                <Button size="sm" variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/10">
-                  Restock
-                </Button>
-              </div>
-            ))}
-          </div>
-          <Button className="mt-4 w-full" variant="outline">
-            View All Low Stock Items
-          </Button>
-        </>
+      )}
+
+      {!loading && items.length > 0 && (
+        <div className="space-y-3">
+          {items.slice(0, 4).map((item) => (
+            <div
+              key={item.product_id}
+              className="rounded-lg bg-red-50 p-3"
+            >
+              <p className="font-medium">{item.product_name}</p>
+              <p className="text-sm text-muted-foreground">
+                {item.quantity_in_stock} left (Min: {item.reorder_level})
+              </p>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

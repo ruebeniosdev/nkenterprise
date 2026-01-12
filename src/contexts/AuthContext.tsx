@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const login = async (username: string, password: string): Promise<boolean> => {
-    const url = "https://2494ee857a2f.ngrok-free.app/api/auth/login";
+    const url = "https://e0381ad6b58d.ngrok-free.app/api/auth/login";
 
     const response = await fetch(url, {
       method: "POST",
